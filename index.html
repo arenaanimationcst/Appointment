@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reschedule Your Appointment - Arena Animation CST</title>
+<title>Book Your Appointment - Arena Animation CST</title>
 <style>
   :root{
     --maroon:#6e1f2a;
@@ -202,29 +202,29 @@
 </style>
 </head>
 <body>
-
+ 
 <div class="card">
   <div class="header">
     <div class="brand">Arena Animation CST</div>
-    <h1>Reschedule your free<br>career counselling session</h1>
-    <p>Pick a new date &amp; time that works for you</p>
+    <h1>Book your free<br>career counselling session</h1>
+    <p>Pick a date &amp; time that works for you</p>
   </div>
-
+ 
   <div class="body" id="appBody">
     <div class="loading">Loading available slots...</div>
   </div>
 </div>
-
+ 
 <script>
 const BIN_ID = "6a2a6d3fda38895dfeabe333";
 const API_KEY = "$2a$10$P7VEzBc.j5zUfCUNbw/X5e10mHmBgEXLeOF8ONana6GfCMdt2VMTi";
 const BASE_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
 const ARENA_NUMBER = "918828823738";
-
+ 
 let config = null;
 let selectedDate = null;
 let selectedSlot = null;
-
+ 
 async function loadConfig(){
   try{
     const res = await fetch(BASE_URL + "/latest", {
@@ -237,7 +237,7 @@ async function loadConfig(){
   }
   render();
 }
-
+ 
 function formatDateLabel(dateStr){
   const d = new Date(dateStr + "T00:00:00");
   const dow = d.toLocaleDateString('en-US',{weekday:'short'});
@@ -245,20 +245,20 @@ function formatDateLabel(dateStr){
   const mon = d.toLocaleDateString('en-US',{month:'short'});
   return {dow, dnum, mon};
 }
-
+ 
 function render(){
   const body = document.getElementById('appBody');
   const dates = Object.keys(config.dates || {}).sort();
-
+ 
   if(dates.length === 0){
     body.innerHTML = '<div class="empty-msg">No slots available right now.<br>Please contact us directly on WhatsApp.</div>';
     return;
   }
-
+ 
   let html = '';
   html += '<div class="step-label">Your name</div>';
   html += '<input type="text" class="name-input" id="studentName" placeholder="Enter your full name">';
-
+ 
   html += '<div class="step-label">Select a date</div>';
   html += '<div class="dates-grid">';
   dates.forEach(dateStr=>{
@@ -273,7 +273,7 @@ function render(){
             </div>`;
   });
   html += '</div>';
-
+ 
   if(selectedDate){
     html += '<div class="step-label">Select a time slot</div>';
     const slots = (config.dates[selectedDate].slots || []);
@@ -289,7 +289,7 @@ function render(){
       html += '</div>';
     }
   }
-
+ 
   if(selectedDate && selectedSlot){
     const lbl = formatDateLabel(selectedDate);
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
@@ -298,21 +298,21 @@ function render(){
       Tap the button below to confirm via WhatsApp. Our team will get back to you shortly to confirm your slot.
     </div>`;
   }
-
+ 
   const ready = selectedDate && selectedSlot;
   const nameVal = document.getElementById('studentName')?.value || '';
-
+ 
   html += `<a class="cta ${ready?'':'disabled'}" id="confirmBtn" href="#">
     <i>&#9989;</i> Confirm via WhatsApp
   </a>`;
-
+ 
   html += `<div class="footnote">
     Your first session is completely complimentary.<br>
     By submitting, our admissions team will confirm your new slot.
   </div>`;
-
+ 
   body.innerHTML = html;
-
+ 
   const nameInput = document.getElementById('studentName');
   if(nameInput){
     nameInput.value = nameVal;
@@ -320,18 +320,18 @@ function render(){
   }
   updateButton();
 }
-
+ 
 function selectDate(dateStr){
   selectedDate = dateStr;
   selectedSlot = null;
   render();
 }
-
+ 
 function selectSlot(time){
   selectedSlot = time;
   render();
 }
-
+ 
 function updateButton(){
   const btn = document.getElementById('confirmBtn');
   if(!btn) return;
@@ -339,7 +339,7 @@ function updateButton(){
   if(selectedDate && selectedSlot && name){
     btn.classList.remove('disabled');
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-    const msg = `Hi! I would like to reschedule my appointment.\n\nName: ${name}\nNew Date: ${fullDate}\nNew Time: ${selectedSlot}\n\nPlease confirm this slot for me. Thank you!`;
+    const msg = `Hi! I would like to book an appointment.\n\nName: ${name}\nDate: ${fullDate}\nTime: ${selectedSlot}\n\nPlease confirm this slot for me. Thank you!`;
     btn.href = `https://wa.me/${ARENA_NUMBER}?text=${encodeURIComponent(msg)}`;
     btn.target = "_blank";
   }else{
@@ -347,9 +347,9 @@ function updateButton(){
     btn.removeAttribute('href');
   }
 }
-
+ 
 loadConfig();
 </script>
-
+ 
 </body>
 </html>
