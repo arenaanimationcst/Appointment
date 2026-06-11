@@ -41,7 +41,7 @@
     margin-bottom:4px;
   }
   .header h1{font-size:18px;font-weight:600;}
-
+ 
   .login-card, .panel{
     background:#fff;
     border:1px solid var(--line);
@@ -208,13 +208,13 @@
     <div class="brand">Arena Animation CST</div>
     <h1>Reschedule slots - Admin panel</h1>
   </div>
-
+ 
   <div class="login-card" id="loginCard">
     <div class="err" id="loginErr">Incorrect password. Try again.</div>
     <input type="password" id="passInput" placeholder="Enter admin password">
     <button class="btn-primary" onclick="checkLogin()">Unlock</button>
   </div>
-
+ 
   <div id="adminPanel" class="hidden">
     <div class="panel">
       <div class="date-title" style="margin-bottom:10px;">Add new date</div>
@@ -223,22 +223,22 @@
         <button class="btn-primary" style="width:auto;" onclick="addDate()">Add</button>
       </div>
     </div>
-
+ 
     <div id="datesContainer"></div>
-
+ 
     <button class="btn-save" onclick="saveConfig()">Save changes</button>
     <div class="status-msg" id="statusMsg"></div>
   </div>
 </div>
-
+ 
 <script>
 const BIN_ID = "6a2a6d3fda38895dfeabe333";
 const API_KEY = "$2a$10$P7VEzBc.j5zUfCUNbw/X5e10mHmBgEXLeOF8ONana6GfCMdt2VMTi";
 const BASE_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
 const ADMIN_PASSWORD = "Arena@Faiz786";
-
+ 
 let config = { dates: {} };
-
+ 
 function checkLogin(){
   const val = document.getElementById('passInput').value;
   if(val === ADMIN_PASSWORD){
@@ -249,7 +249,7 @@ function checkLogin(){
     document.getElementById('loginErr').style.display = 'block';
   }
 }
-
+ 
 async function loadConfig(){
   try{
     const res = await fetch(BASE_URL + "/latest", {
@@ -262,28 +262,28 @@ async function loadConfig(){
   }
   render();
 }
-
+ 
 function render(){
   const container = document.getElementById('datesContainer');
   const dates = Object.keys(config.dates).sort();
-
+ 
   if(dates.length === 0){
     container.innerHTML = '<div class="empty">No dates added yet.</div>';
     return;
   }
-
+ 
   let html = '';
   dates.forEach(dateStr=>{
     const dayConf = config.dates[dateStr];
     const fullDate = new Date(dateStr+"T00:00:00").toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
     const isOn = dayConf.available !== false;
-
+ 
     html += `<div class="date-card">
       <div class="date-card-head">
         <div class="date-title">${fullDate}</div>
         <div class="toggle ${isOn?'on':''}" onclick="toggleDate('${dateStr}')"></div>
       </div>`;
-
+ 
     (dayConf.slots || []).forEach((slot, idx)=>{
       const slotOn = slot.available !== false;
       html += `<div class="slot-row">
@@ -292,56 +292,58 @@ function render(){
         <button class="remove-btn" onclick="removeSlot('${dateStr}',${idx})">&times;</button>
       </div>`;
     });
-
+ 
     html += `<button class="btn-add" onclick="addSlot('${dateStr}')">+ Add time slot</button>
       <button class="remove-date" onclick="removeDate('${dateStr}')">Remove this date</button>
     </div>`;
   });
-
+ 
   container.innerHTML = html;
 }
-
+ 
+const DEFAULT_SLOTS = ["10:00 AM","11:00 AM","12:30 PM","1:00 PM","1:30 PM","3:00 PM","3:30 PM","4:30 PM","5:00 PM","6:00 PM","6:30 PM","7:00 PM"];
+ 
 function addDate(){
   const input = document.getElementById('newDateInput');
   const val = input.value;
   if(!val) return;
   if(!config.dates[val]){
-    config.dates[val] = { available: true, slots: [] };
+    config.dates[val] = { available: true, slots: DEFAULT_SLOTS.map(t=>({time:t, available:true})) };
   }
   input.value = '';
   render();
 }
-
+ 
 function removeDate(dateStr){
   delete config.dates[dateStr];
   render();
 }
-
+ 
 function toggleDate(dateStr){
   config.dates[dateStr].available = config.dates[dateStr].available === false ? true : false;
   render();
 }
-
+ 
 function addSlot(dateStr){
   config.dates[dateStr].slots.push({ time: "", available: true });
   render();
 }
-
+ 
 function removeSlot(dateStr, idx){
   config.dates[dateStr].slots.splice(idx,1);
   render();
 }
-
+ 
 function updateSlotTime(dateStr, idx, val){
   config.dates[dateStr].slots[idx].time = val;
 }
-
+ 
 function toggleSlot(dateStr, idx){
   const slot = config.dates[dateStr].slots[idx];
   slot.available = slot.available === false ? true : false;
   render();
 }
-
+ 
 async function saveConfig(){
   const statusMsg = document.getElementById('statusMsg');
   try{
@@ -366,6 +368,6 @@ async function saveConfig(){
   setTimeout(()=>{ statusMsg.classList.remove('show'); }, 3000);
 }
 </script>
-
+ 
 </body>
 </html>
