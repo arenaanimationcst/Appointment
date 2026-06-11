@@ -230,6 +230,10 @@ const ARENA_NUMBER = "918828823738";
 let config = null;
 let selectedDate = null;
 let selectedSlot = null;
+let savedName = '';
+let savedNumber = '';
+let savedParent = '';
+let savedAlone = false;
  
 async function loadConfig(){
   try{
@@ -262,22 +266,9 @@ function render(){
   }
  
   let html = '';
-  html += '<div class="step-label">Your name</div>';
-  html += '<input type="text" class="name-input" id="studentName" placeholder="Enter your full name">';
-  html += '<div class="step-label">Student mobile number</div>';
-  html += '<input type="text" class="name-input" id="studentNumber" placeholder="Enter your mobile number" inputmode="numeric" maxlength="10">';
-  html += `<div class="step-label">Parent / Guardian</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;">
-        <input type="checkbox" id="aloneCheck" onchange="toggleParent()" style="width:16px;height:16px;cursor:pointer;">
-        I will attend alone
-      </label>
-    </div>
-    <div id="parentWrap" style="margin-bottom:24px;">
-      <input type="text" class="name-input" id="parentName" placeholder="Enter parent / guardian name" style="margin-bottom:0;">
-    </div>`;
  
-  html += '<div class="step-label">Select a date</div>';
+  // STEP 1: Date
+  html += '<div class="step-label">Step 1 — Select a date</div>';
   html += '<div class="dates-grid">';
   dates.forEach(dateStr=>{
     const dayConf = config.dates[dateStr];
@@ -292,8 +283,9 @@ function render(){
   });
   html += '</div>';
  
+  // STEP 2: Time (only after date selected)
   if(selectedDate){
-    html += '<div class="step-label">Select a time slot</div>';
+    html += '<div class="step-label">Step 2 — Select a time slot</div>';
     const slots = (config.dates[selectedDate].slots || []);
     if(slots.length === 0){
       html += '<div class="empty-msg">No time slots set for this date.</div>';
@@ -308,41 +300,51 @@ function render(){
     }
   }
  
+  // STEP 3: Details (only after date AND slot selected)
   if(selectedDate && selectedSlot){
-    const lbl = formatDateLabel(selectedDate);
+    html += '<div class="step-label">Step 3 — Your details</div>';
+    html += `<input type="text" class="name-input" id="studentName" placeholder="Enter your full name" value="${escHtml(savedName)}">`;
+    html += '<div class="step-label">Student mobile number</div>';
+    html += `<input type="text" class="name-input" id="studentNumber" placeholder="Enter your mobile number" inputmode="numeric" maxlength="10" value="${escHtml(savedNumber)}">`;
+    html += `<div class="step-label">Parent / Guardian <span style="font-size:11px;font-weight:400;color:var(--muted);">(person you want to involve in the session)</span></div>`;
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;">
+        <input type="checkbox" id="aloneCheck" ${savedAlone?'checked':''} style="width:16px;height:16px;cursor:pointer;">
+        I will attend alone
+      </label>
+    </div>`;
+    if(!savedAlone){
+      html += `<input type="text" class="name-input" id="parentName" placeholder="Enter parent / guardian name" value="${escHtml(savedParent)}" style="margin-bottom:20px;">`;
+    }
+ 
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
     html += `<div class="summary">
       <b>Selected:</b> ${fullDate} at ${selectedSlot}<br>
-      Tap the button below to confirm via WhatsApp. Our team will get back to you shortly to confirm your slot.
+      Tap the button below to confirm via WhatsApp.
     </div>`;
   }
  
   const ready = selectedDate && selectedSlot;
-  const nameVal = document.getElementById('studentName')?.value || '';
- 
-  html += `<a class="cta ${ready?'':'disabled'}" id="confirmBtn" href="#">
-    <i>&#9989;</i> Confirm via WhatsApp
-  </a>`;
- 
-  html += `<div class="footnote">
-    Your first session is completely complimentary.<br>
-    By submitting, our admissions team will confirm your new slot.
-  </div>`;
+  html += `<a class="cta ${ready?'':'disabled'}" id="confirmBtn" href="#">&#9989; Confirm via WhatsApp</a>`;
+  html += `<div class="footnote">Your first session is completely complimentary.<br>By submitting, our admissions team will confirm your new slot.</div>`;
  
   body.innerHTML = html;
  
-  const nameInput = document.getElementById('studentName');
-  if(nameInput){
-    nameInput.value = nameVal;
-    nameInput.addEventListener('input', updateButton);
-  }
-  const numInput = document.getElementById('studentNumber');
-  if(numInput){ numInput.addEventListener('input', updateButton); }
-  const parentInput = document.getElementById('parentName');
-  if(parentInput){ parentInput.addEventListener('input', updateButton); }
+  // Attach listeners to preserve field values
+  const nameEl = document.getElementById('studentName');
+  if(nameEl){ nameEl.addEventListener('input', ()=>{ savedName=nameEl.value; updateButton(); }); }
+  const numEl = document.getElementById('studentNumber');
+  if(numEl){ numEl.addEventListener('input', ()=>{ savedNumber=numEl.value; updateButton(); }); }
+  const parentEl = document.getElementById('parentName');
+  if(parentEl){ parentEl.addEventListener('input', ()=>{ savedParent=parentEl.value; updateButton(); }); }
   const aloneEl = document.getElementById('aloneCheck');
-  if(aloneEl){ aloneEl.addEventListener('change', toggleParent); }
+  if(aloneEl){ aloneEl.addEventListener('change', ()=>{ savedAlone=aloneEl.checked; render(); }); }
+ 
   updateButton();
+}
+ 
+function escHtml(str){
+  return (str||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
  
 function selectDate(dateStr){
@@ -359,28 +361,29 @@ function selectSlot(time){
 function updateButton(){
   const btn = document.getElementById('confirmBtn');
   if(!btn) return;
-  const name = document.getElementById('studentName').value.trim();
-  const studentNum = document.getElementById('studentNumber') ? document.getElementById('studentNumber').value.trim() : '';
-  const aloneCheck = document.getElementById('aloneCheck');
-  const isAlone = aloneCheck ? aloneCheck.checked : false;
-  const parentName = isAlone ? 'Attending alone' : (document.getElementById('parentName') ? document.getElementById('parentName').value.trim() : '');
-  if(selectedDate && selectedSlot && name && studentNum && (isAlone || parentName)){
+  const name = savedName.trim();
+  const num = savedNumber.trim();
+  const alone = savedAlone;
+  const parent = savedParent.trim();
+  if(selectedDate && selectedSlot && name && num && (alone || parent)){
     btn.classList.remove('disabled');
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-    const msg = `Hi! I would like to book an appointment.\n\nStudent Name: ${name}\nMobile: ${studentNum}\nParent/Guardian: ${parentName}\nDate: ${fullDate}\nTime: ${selectedSlot}\n\nPlease confirm my slot. Thank you!`;
+    const parentLine = alone ? 'Attending alone' : parent;
+    const msg = `Hi! I would like to book an appointment.
+ 
+Student Name: ${name}
+Mobile: ${num}
+Parent/Guardian: ${parentLine}
+Date: ${fullDate}
+Time: ${selectedSlot}
+ 
+Please confirm my slot. Thank you!`;
     btn.href = `https://wa.me/${ARENA_NUMBER}?text=${encodeURIComponent(msg)}`;
     btn.target = "_blank";
   }else{
     btn.classList.add('disabled');
     btn.removeAttribute('href');
   }
-}
- 
-function toggleParent(){
-  const chk = document.getElementById('aloneCheck');
-  const wrap = document.getElementById('parentWrap');
-  if(chk && wrap){ wrap.style.display = chk.checked ? 'none' : 'block'; }
-  updateButton();
 }
  
 loadConfig();
