@@ -369,21 +369,36 @@ function updateButton(){
     btn.classList.remove('disabled');
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
     const parentLine = alone ? 'Attending alone' : parent;
-    const msg = `Hi! 👋 I'd like to confirm my appointment at *Arena Animation CST* 🎬
+    // Emojis written as unicode escapes (not raw characters) so they can never
+    // get mangled by editors / git / OS encoding issues.
+    const E = {
+      wave: '\u{1F44B}',      // 👋
+      clap: '\u{1F3AC}',      // 🎬
+      mobile: '\u{1F4F1}',    // 📱
+      family: '\u{1F468}\u200D\u{1F469}\u200D\u{1F466}', // 👨‍👩‍👦
+      date: '\u{1F4C5}',      // 📅
+      time: '\u23F0',         // ⏰
+      check: '\u2705',        // ✅
+      pin: '\u{1F4CD}',       // 📍
+      phone: '\u{1F4DE}',     // 📞
+      map: '\u{1F5FA}\uFE0F', // 🗺️
+      thumb: '\u{1F44D}'      // 👍
+    };
+    const msg = `Hi! ${E.wave} I'd like to confirm my appointment at *Arena Animation CST* ${E.clap}
  
-📱 *Mobile:* ${num}
-👨‍👩‍👦 *Parent/Guardian:* ${parentLine}
-📅 *Date:* ${fullDate}
-⏰ *Time:* ${selectedSlot}
+${E.mobile} *Mobile:* ${num}
+${E.family} *Parent/Guardian:* ${parentLine}
+${E.date} *Date:* ${fullDate}
+${E.time} *Time:* ${selectedSlot}
  
-✅ I am confirming this appointment and shall reach on the below address:
+${E.check} I am confirming this appointment and shall reach on the below address:
  
-📍 *Address:* Arena Animation CST
+${E.pin} *Address:* Arena Animation CST
 142, Dr Dadabhai Naoroji Rd, near Akbar Travels, Fort, Mumbai – 400001
-📞 *Call/WhatsApp:* 088288 23738
-🗺️ *Location:* https://maps.app.goo.gl/cx7QeQ3vwaoLytb16
+${E.phone} *Call/WhatsApp:* 088288 23738
+${E.map} *Location:* https://maps.app.goo.gl/cx7QeQ3vwaoLytb16
  
-Regards and Thanks!! 👍
+Regards and Thanks!! ${E.thumb}
 *${name}*`;
     btn.href = `https://wa.me/${ARENA_NUMBER}?text=${encodeURIComponent(msg)}`;
     btn.target = "_blank";
