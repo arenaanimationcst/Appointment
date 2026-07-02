@@ -369,15 +369,22 @@ function updateButton(){
     btn.classList.remove('disabled');
     const fullDate = new Date(selectedDate+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
     const parentLine = alone ? 'Attending alone' : parent;
-    const msg = `Hi! I would like to book an appointment.
+    const msg = `Hi! 👋 I'd like to confirm my appointment at *Arena Animation CST* 🎬
  
-Student Name: ${name}
-Mobile: ${num}
-Parent/Guardian: ${parentLine}
-Date: ${fullDate}
-Time: ${selectedSlot}
+📱 *Mobile:* ${num}
+👨‍👩‍👦 *Parent/Guardian:* ${parentLine}
+📅 *Date:* ${fullDate}
+⏰ *Time:* ${selectedSlot}
  
-Please confirm my slot. Thank you!`;
+✅ I am confirming this appointment and shall reach on the below address:
+ 
+📍 *Address:* Arena Animation CST
+142, Dr Dadabhai Naoroji Rd, near Akbar Travels, Fort, Mumbai – 400001
+📞 *Call/WhatsApp:* 088288 23738
+🗺️ *Location:* https://maps.app.goo.gl/cx7QeQ3vwaoLytb16
+ 
+Regards and Thanks!! 👍
+*${name}*`;
     btn.href = `https://wa.me/${ARENA_NUMBER}?text=${encodeURIComponent(msg)}`;
     btn.target = "_blank";
   }else{
