@@ -58,6 +58,73 @@
     margin-top:6px;
   }
   .body{padding:24px;}
+  .thankyou-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(42,36,32,0.55);
+    z-index:999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .thankyou-overlay.show{display:flex;}
+  .thankyou-card{
+    width:100%;
+    max-width:380px;
+    background:#fff;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 40px rgba(0,0,0,0.25);
+    text-align:center;
+    animation:popIn 0.25s ease;
+  }
+  @keyframes popIn{
+    from{transform:scale(0.9);opacity:0;}
+    to{transform:scale(1);opacity:1;}
+  }
+  .thankyou-header{
+    background:linear-gradient(135deg,var(--maroon) 0%,var(--maroon-dark) 100%);
+    color:#fff;
+    padding:28px 24px 22px;
+  }
+  .thankyou-header .emoji{font-size:40px;margin-bottom:8px;}
+  .thankyou-header h2{font-size:19px;font-weight:700;}
+  .thankyou-body{padding:22px 24px 26px;}
+  .thankyou-body p{font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:6px;}
+  .thankyou-body .status{
+    display:inline-block;
+    background:#e9f7ee;
+    color:#1e8a4c;
+    font-weight:700;
+    font-size:13px;
+    padding:5px 14px;
+    border-radius:20px;
+    margin:10px 0 14px;
+  }
+  .thankyou-body .tagline{
+    font-size:14px;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .thankyou-body .see-you{
+    font-weight:700;
+    color:var(--maroon);
+    font-size:15px;
+    margin-top:10px;
+  }
+  .thankyou-close{
+    display:inline-block;
+    margin-top:18px;
+    background:var(--maroon);
+    color:#fff;
+    border:none;
+    padding:11px 28px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
   .step-label{
     font-size:12px;
     font-weight:700;
@@ -218,6 +285,21 @@
  
   <div class="body" id="appBody">
     <div class="loading">Loading available slots...</div>
+  </div>
+</div>
+ 
+<div class="thankyou-overlay" id="thankyouOverlay">
+  <div class="thankyou-card">
+    <div class="thankyou-header">
+      <div class="emoji">&#127881;</div>
+      <h2>Thank you for choosing<br>Arena Animation CST!</h2>
+    </div>
+    <div class="thankyou-body">
+      <div class="status">&#9989; Appointment Confirmed</div>
+      <p class="tagline">We're excited to meet you and help you take the first step toward a creative career.</p>
+      <div class="see-you">See you soon! &#128640;</div>
+      <button class="thankyou-close" id="thankyouCloseBtn">Done</button>
+    </div>
   </div>
 </div>
  
@@ -396,17 +478,39 @@ ${E.check} I am confirming this appointment and shall reach on the below address
 ${E.pin} *Address:* Arena Animation CST
 142, Dr Dadabhai Naoroji Rd, near Akbar Travels, Fort, Mumbai – 400001
 ${E.phone} *Call/WhatsApp:* 088288 23738
-${E.map} *Location:* https://maps.app.goo.gl/DCkiiMnd3uSVmmYM7
+${E.map} *Location:* https://maps.app.goo.gl/cx7QeQ3vwaoLytb16
  
 Regards and Thanks!! ${E.thumb}
 *${name}*`;
     btn.href = `https://wa.me/${ARENA_NUMBER}?text=${encodeURIComponent(msg)}`;
     btn.target = "_blank";
+    if(!btn.dataset.bound){
+      btn.dataset.bound = "1";
+      btn.addEventListener('click', ()=>{
+        if(btn.classList.contains('disabled')) return;
+        setTimeout(showThankYou, 400);
+      });
+    }
   }else{
     btn.classList.add('disabled');
     btn.removeAttribute('href');
   }
 }
+ 
+function showThankYou(){
+  const overlay = document.getElementById('thankyouOverlay');
+  if(overlay) overlay.classList.add('show');
+}
+ 
+function hideThankYou(){
+  const overlay = document.getElementById('thankyouOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
+ 
+document.addEventListener('DOMContentLoaded', ()=>{
+  const closeBtn = document.getElementById('thankyouCloseBtn');
+  if(closeBtn) closeBtn.addEventListener('click', hideThankYou);
+});
  
 loadConfig();
 </script>
