@@ -266,7 +266,73 @@ async function loadConfig(){
   }catch(e){
     config = { dates: {} };
   }
+  await maintainRollingDates();
   render();
+}
+ 
+// Keeps a rolling window of 12 days: the 6 days before today (shown as
+// CLOSED, kept for reference) plus today + next 5 days (OPEN, total 6).
+// Anything older than 6 days back is auto-deleted. Any missing day inside
+// the window is auto-added. Every date before today is force-closed the
+// moment the date rolls over (simple rule: yesterday always closes).
+function getTodayStr(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+ 
+function dateStrFromOffset(offsetDays){
+  const d = new Date();
+  d.setDate(d.getDate()+offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+ 
+async function maintainRollingDates(){
+  const todayStr = getTodayStr();
+  let changed = false;
+ 
+  // Window = today-6 ... today+5 (12 days total)
+  const windowStart = dateStrFromOffset(-6);
+  const windowDates = [];
+  for(let i=-6;i<=5;i++) windowDates.push(dateStrFromOffset(i));
+ 
+  // 1) Delete anything older than the window (older than today-6)
+  Object.keys(config.dates).forEach(dateStr=>{
+    if(dateStr < windowStart){
+      delete config.dates[dateStr];
+      changed = true;
+    }
+  });
+ 
+  // 2) Ensure every date inside the window exists
+  windowDates.forEach(dateStr=>{
+    if(!config.dates[dateStr]){
+      config.dates[dateStr] = { available: dateStr >= todayStr, slots: DEFAULT_SLOTS.map(t=>({time:t, available:true})) };
+      changed = true;
+    }
+  });
+ 
+  // 3) Simple auto-close rule: any date before today is always closed,
+  // no matter what it was toggled to before.
+  Object.keys(config.dates).forEach(dateStr=>{
+    if(dateStr < todayStr && config.dates[dateStr].available !== false){
+      config.dates[dateStr].available = false;
+      changed = true;
+    }
+  });
+ 
+  // 4) Save silently if anything changed, so index.html reflects it too
+  if(changed){
+    try{
+      await fetch(BASE_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+        body: JSON.stringify(config)
+      });
+    }catch(e){ /* will retry next time admin panel loads */ }
+  }
 }
  
 function render(){
